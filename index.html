@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Password Strength Checker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --text-color: #e2e8f0;
+            --accent-color: #3b82f6;
+            --success-color: #22c55e;
+            --warning-color: #eab308;
+            --danger-color: #ef4444;
+            --border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(139, 92, 246, 0.15) 0px, transparent 50%);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 450px;
+            padding: 2rem;
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            margin: 1rem;
+        }
+
+        h1 {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            text-align: center;
+            background: linear-gradient(to right, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        p.subtitle {
+            text-align: center;
+            color: #94a3b8;
+            margin-bottom: 2rem;
+            font-size: 0.95rem;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 1rem 1.25rem;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #64748b;
+            transition: color 0.3s;
+        }
+
+        .toggle-password:hover {
+            color: var(--text-color);
+        }
+
+        .strength-meter {
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+            display: flex;
+        }
+
+        .strength-bar {
+            height: 100%;
+            width: 0;
+            transition: width 0.4s ease, background-color 0.4s ease;
+            border-radius: 2px;
+        }
+
+        .requirements {
+            display: grid;
+            gap: 0.75rem;
+        }
+
+        .requirement {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 0.9rem;
+            color: #94a3b8;
+            transition: all 0.3s ease;
+            padding: 0.5rem;
+            border-radius: 8px;
+        }
+
+        .requirement.met {
+            color: var(--text-color);
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .requirement i {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            font-size: 0.7rem;
+            transition: all 0.3s ease;
+        }
+
+        .requirement.met i {
+            background: var(--success-color);
+            color: #000;
+        }
+
+        .status-text {
+            text-align: right;
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-top: -1rem;
+            margin-bottom: 1.5rem;
+            min-height: 1.25rem;
+            transition: color 0.3s;
+        }
+        
+    </style>
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Security Check</h1>
+        <p class="subtitle">Enter a password to check its strength</p>
+
+        <div class="input-group">
+            <input type="password" id="password" placeholder="Enter your password">
+            <i class="fa-solid fa-eye toggle-password" id="togglePassword"></i>
+        </div>
+
+        <div class="strength-meter">
+            <div class="strength-bar" id="strengthBar"></div>
+        </div>
+        <div class="status-text" id="statusText"></div>
+
+        <div class="requirements">
+            <div class="requirement" id="req-length">
+                <i class="fa-solid fa-check"></i>
+                <span>At least 8 characters</span>
+            </div>
+            <div class="requirement" id="req-upper">
+                <i class="fa-solid fa-check"></i>
+                <span>Uppercase letter</span>
+            </div>
+            <div class="requirement" id="req-lower">
+                <i class="fa-solid fa-check"></i>
+                <span>Lowercase letter</span>
+            </div>
+            <div class="requirement" id="req-number">
+                <i class="fa-solid fa-check"></i>
+                <span>Number</span>
+            </div>
+            <div class="requirement" id="req-special">
+                <i class="fa-solid fa-check"></i>
+                <span>Special character</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const passwordInput = document.getElementById('password');
+        const togglePassword = document.getElementById('togglePassword');
+        const strengthBar = document.getElementById('strengthBar');
+        const statusText = document.getElementById('statusText');
+
+        const requirements = {
+            length: { regex: /.{8,}/, element: document.getElementById('req-length') },
+            upper: { regex: /[A-Z]/, element: document.getElementById('req-upper') },
+            lower: { regex: /[a-z]/, element: document.getElementById('req-lower') },
+            number: { regex: /[0-9]/, element: document.getElementById('req-number') },
+            special: { regex: /[!@#$%^&*(),.?":{}|<>]/, element: document.getElementById('req-special') }
+        };
+
+        togglePassword.addEventListener('click', () => {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            togglePassword.classList.toggle('fa-eye');
+            togglePassword.classList.toggle('fa-eye-slash');
+        });
+
+        passwordInput.addEventListener('input', () => {
+            const value = passwordInput.value;
+            let strength = 0;
+            let metCount = 0;
+
+            // Check requirements
+            for (const key in requirements) {
+                const req = requirements[key];
+                const isMet = req.regex.test(value);
+                
+                if (isMet) {
+                    req.element.classList.add('met');
+                    req.element.querySelector('i').className = 'fa-solid fa-check';
+                    strength++;
+                    metCount++;
+                } else {
+                    req.element.classList.remove('met');
+                    req.element.querySelector('i').className = 'fa-solid fa-xmark'; // Or circle
+                    // Reset icon style specifically if not met? 
+                    // Let's keep check but change color via class
+                    req.element.querySelector('i').className = 'fa-solid fa-check'; // Keep check icon shape but translucent
+                }
+            }
+
+            // Calculate percentage
+            const percentage = (strength / 5) * 100;
+            strengthBar.style.width = `${percentage}%`;
+
+            // Update color and text
+            let color = '#ef4444'; // Weak
+            let status = 'Weak';
+
+            if (value.length === 0) {
+                strengthBar.style.width = '0%';
+                statusText.textContent = '';
+                return;
+            }
+
+            if (strength === 5) {
+                color = '#22c55e'; // Strong
+                status = 'Strong';
+            } else if (strength >= 3) {
+                color = '#eab308'; // Moderate
+                status = 'Moderate';
+            } else {
+                color = '#ef4444'; // Weak
+                status = 'Weak';
+            }
+
+            strengthBar.style.backgroundColor = color;
+            statusText.textContent = status;
+            statusText.style.color = color;
+        });
+    </script>
+</body>
+</html>
